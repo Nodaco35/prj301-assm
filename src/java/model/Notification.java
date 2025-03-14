@@ -1,29 +1,32 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
+
+import java.util.Date;
 
 /**
  *
  * @author NC PC
  */
 public class Notification {
-    private int notificationId;
-    private int userId;
-    private String message;
-    private String sentDate;
-    private boolean isRead;
 
+    private int notificationId;
+    private String userId; // code cũ đang khai báo int
+    private String message;
+    private Date sentDate;// ĐỔI thành Date
+    private int isRead; // đổi thành int
+    //thêm requestId từ bảng Inse Request
+    private  int requestId;
+    private  int recordId;
     public Notification() {
     }
 
-    public Notification(int notificationId, int userId, String message, String sentDate, boolean isRead) {
+    public Notification(int notificationId, String userId, String message, Date sentDate, int isRead, int requestId, int recordId) {
         this.notificationId = notificationId;
         this.userId = userId;
         this.message = message;
         this.sentDate = sentDate;
         this.isRead = isRead;
+        this.requestId = requestId;
+        this.recordId = this.recordId;
     }
 
     public int getNotificationId() {
@@ -34,11 +37,11 @@ public class Notification {
         this.notificationId = notificationId;
     }
 
-    public int getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
@@ -50,21 +53,41 @@ public class Notification {
         this.message = message;
     }
 
-    public String getSentDate() {
+    public Date getSentDate() {
         return sentDate;
     }
 
-    public void setSentDate(String sentDate) {
+    public void setSentDate(Date sentDate) {
         this.sentDate = sentDate;
     }
 
-    public boolean isIsRead() {
+    public int getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(int recordId) {
+        this.recordId = recordId;
+    }
+
+    public int getIsRead() {
         return isRead;
     }
 
-    public void setIsRead(boolean isRead) {
+    public void setIsRead(int isRead) {
         this.isRead = isRead;
     }
+
+    public int getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(int requestId) {
+        this.requestId = requestId;
+    }
+   
+    
+    
+    
     
     
 }

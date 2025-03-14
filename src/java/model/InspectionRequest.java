@@ -7,6 +7,7 @@ public class InspectionRequest {
     private Integer stationId;
     private String requestedDate;
     private String preferredDate;
+    private String inspectorId;
     private String status;
     private String comments;
 

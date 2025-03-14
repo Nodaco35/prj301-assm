@@ -27,5 +27,5 @@
     <welcome-file-list>
         <welcome-file>view/lobby.jsp</welcome-file>
     </welcome-file-list>
-F
+
 </web-app>

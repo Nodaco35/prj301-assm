@@ -25,7 +25,6 @@ public class DBContext {
                 connection = DriverManager.getConnection(url, user, password);
             }
         } catch (Exception e) {
-//            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, e);
             connection = null;
         }
     }

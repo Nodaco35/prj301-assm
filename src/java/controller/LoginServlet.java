@@ -60,7 +60,8 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         PrintWriter out = response.getWriter();
         HttpSession session = request.getSession();
-        User user = (User)session.getAttribute("user");
+        String action = request.getParameter("action");
+        User user = (User) session.getAttribute("user");
         if (user == null) {
             request.getRequestDispatcher("view/login.jsp").forward(request, response);
 
@@ -83,16 +84,53 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         PrintWriter out = response.getWriter();
         HttpSession session = request.getSession();
-        //String action = request.getParameter("action");
+        String action = request.getParameter("action");
 
         String userN = request.getParameter("user");
         String pass = request.getParameter("pass");
         User user = UserDAO.getUserByEmailAndPassword(userN, pass);
-        if (user != null) {
+        if (user != null && "loginSuccessfully".equals(action)) {
             session.setAttribute("user", user);
             response.sendRedirect("user");
-        } else {
-            out.print("Cannot find user");
+        } else if ("registerSuccessfully".equals(action)) {
+            String idCard = (String)request.getParameter("idCard");
+            String fullName = (String)request.getParameter("fullName");
+            String email = (String)request.getParameter("email");
+            String password = (String)request.getParameter("password");
+            String phone = (String)request.getParameter("phone");
+            String address = (String)request.getParameter("address");
+            
+            if (UserDAO.getUserByUserID(idCard) != null) {
+                request.setAttribute("errorR", "ID existed");
+                request.setAttribute("optionLoginOrRegister", "register");
+                request.getRequestDispatcher("view/login.jsp").forward(request, response);
+            }
+            if (UserDAO.getUserByEmail(email) != null) {
+                request.setAttribute("errorR", "Email existed");
+                request.setAttribute("optionLoginOrRegister", "register");
+                request.getRequestDispatcher("view/login.jsp").forward(request, response);
+            }
+            User tmp = new User();
+            tmp.setEmail(email);
+            tmp.setFullName(fullName);
+            tmp.setUserId(idCard);
+            tmp.setPassword(password);
+            tmp.setPhone(phone);
+            tmp.setAddress(address);
+            
+            tmp = UserDAO.addUser(tmp);
+            if(tmp==null){
+                request.setAttribute("errorR", "Add unsuccessfully");
+                request.setAttribute("optionLoginOrRegister", "register");
+                request.getRequestDispatcher("view/login.jsp").forward(request, response);
+            } else{
+                request.setAttribute("mes", "Add SUCCESSFULLY");
+                request.setAttribute("optionLoginOrRegister", "register");
+                request.getRequestDispatcher("view/login.jsp").forward(request, response);
+            } 
+        } else {//Sua: Them error tai login.jsp
+            request.setAttribute("error", "Cannot find user");
+            request.getRequestDispatcher("view/login.jsp").forward(request, response);
         }
 
     }

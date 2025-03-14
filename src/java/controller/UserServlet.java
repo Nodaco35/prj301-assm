@@ -1,11 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
+
+
+//Phan xem Record
 package controller;
 
+import dao.InspectionRecordDAO;
 import dao.InspectionRequestDAO;
 import dao.InspectionStationDAO;
+import dao.NotificationDAO;
 import dao.VehicleDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -17,6 +18,8 @@ import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import model.InspectionRequest;
 import model.InspectionStation;
+import model.Notification;
+import model.ShowRecord;
 import model.User;
 import model.Vehicle;
 
@@ -81,7 +84,7 @@ public class UserServlet extends HttpServlet {
         } else if (user != null && action == null && user.getRole().equals("Cơ sở kiểm định")) {
             //Chuyen trang JSP
             out.print("Xin chào Cơ sở kiểm định");
-        } else if (action==null) {
+        } else if (action == null) {
         } //Chuc nang cua Owner
         else if (action.equals("1") && user != null) {
             request.getRequestDispatcher("view/addVehicle.jsp").forward(request, response);
@@ -99,10 +102,11 @@ public class UserServlet extends HttpServlet {
             } else {
                 out.print("VehicleDAO.getAllVehicleByUserID doesn't run");
             }
-        }else if (action.equals("4") && user != null) {
-            //
-        } 
-        else if (action.equals("9") && user != null) {
+        } else if (action.equals("4") && user != null) {
+            ArrayList<Vehicle> vehicles = VehicleDAO.getAllVehicleByUserID(user.getUserId());
+            request.setAttribute("vehicleList", vehicles);
+            request.getRequestDispatcher("view/searchRecordByPlateNum.jsp").forward(request, response);
+        } else if (action.equals("9") && user != null) {
             ArrayList<InspectionRequest> requests = InspectionRequestDAO.getInspectionRequestsByUser(user.getUserId());
             ArrayList<InspectionStation> stations = InspectionStationDAO.getAllStations();
             ArrayList<Vehicle> vehicles = VehicleDAO.getAllVehicleByUserID(user.getUserId());
@@ -116,6 +120,12 @@ public class UserServlet extends HttpServlet {
             }
 
             request.getRequestDispatcher("view/user_inspection_requests.jsp").forward(request, response);
+        }else if ("100".equals(action) && user!=null) {
+            ArrayList<Notification> notifications = NotificationDAO.getAllNotificationsByUserId(user.getUserId()); // Đã sửa
+            request.setAttribute("notifications",
+                    notifications != null ? notifications : new ArrayList<Notification>());
+                    request.getRequestDispatcher("view/NotificationTable.jsp").forward(request, response);
+
         }//Chuc nang Owner Done -> Chay ham DAO
         else if (action.equals("1Done") && user != null) {
             String plateNumber = request.getParameter("plateNumber");
@@ -145,13 +155,17 @@ public class UserServlet extends HttpServlet {
             vehicle = VehicleDAO.addVehicle(vehicle);
             if (vehicle != null) {
                 ArrayList<Vehicle> vehicles = VehicleDAO.getAllVehicleByUserID(user.getUserId());
-                request.setAttribute("vehicles", vehicles);
+                request.setAttribute("vehicleList", vehicles);
                 request.getRequestDispatcher("view/vehicleList.jsp").forward(request, response);
             }
 
         } else if (action.equals("4Done")) {
-            //
-            
+            String plateNum = request.getParameter("plateNum");
+            ArrayList<ShowRecord> records = InspectionRecordDAO.getRecordByPlateNumber(plateNum);
+
+            request.setAttribute("record", records);
+            request.getRequestDispatcher("view/recordList.jsp").forward(request, response);
+
         } else if (action.equals("3Done") && user != null) {
             String plateNumber = request.getParameter("vehicle");
             if (plateNumber == null || plateNumber.isEmpty()) {
@@ -185,20 +199,56 @@ public class UserServlet extends HttpServlet {
                     request.setAttribute("stations", stations);
                     request.setAttribute("vehicles", vehicles);
 
-                    request.getRequestDispatcher("view/user_inspection_requests.jsp").forward(request, response);
+                    request.setAttribute("requests", InspectionRequestDAO.getInspectionRequestsByUser(user.getUserId()));
+                    request.getRequestDispatcher("view/lobby.jsp").forward(request, response);
                 } else {
                     out.print("InspectionRequest is null");
 //                    response.sendRedirect("registerInspection.jsp?error=registrationFailed");
                 }
             }
 
+        } else if (action.equals("confirm")) {
+            String ops = request.getParameter("response");
+            int requestId = Integer.parseInt(request.getParameter("requestId"));
+
+            try {
+                if ("accept".equals(ops)) {
+                    InspectionRequestDAO.handleInspectionRequest(requestId, "accept");
+                } else if ("reject".equals(ops)) {
+                    InspectionRequestDAO.handleInspectionRequest(requestId, "reject");
+                }
+                request.getRequestDispatcher("view/lobby.jsp").forward(request, response);
+            } catch (Exception e) {
+                e.printStackTrace();
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Đã xảy ra lỗi khi xử lý yêu cầu.");
+            }
         }
     }
-
+//-------------------------------------------------------------------------------
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+//        response.setContentType("text/html;charset=UTF-8");
+//        PrintWriter out = response.getWriter();
+//        HttpSession session = request.getSession();
+//        String action = request.getParameter("action");
+//        User user = (User) request.getSession().getAttribute("user");
+//        if (user == null) {
+//            response.sendRedirect(request.getContextPath() + "/login.jsp");
+//            return; // Nếu không có user, chuyển hướng đến trang đăng nhập
+//        }
+//        String userId = user.getUserId();
+//        if ("markAllAsRead".equals(action)) {
+//            // Lấy danh sách thông báo của người dùng
+//            ArrayList<Notification> notifications = NotificationDAO.getAllNotificationsByUserId(userId);
+//            // Cập nhật tất cả thông báo thành đã đọc
+//            for (Notification notification : notifications) {
+//                NotificationDAO.changeIsReadToDone(userId);
+//            }
+//            // Chuyển hướng về lobby.jsp
+//            response.sendRedirect(request.getContextPath() + "/index.jsp");
+//            return; // Đảm bảo không thực hiện thêm bất kỳ lệnh nào sau đó
+//        }
     }
 
     @Override
